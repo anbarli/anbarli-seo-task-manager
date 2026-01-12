@@ -1,12 +1,12 @@
 /**
- * SEO Görev Yöneticisi - JSON Dosya Tabanlı Sistem
- * Veriler data/ klasöründe JSON dosyaları olarak saklanır
+ * SEO Görev Yöneticisi - Otomatik Kayıt Sistemi
+ * Veriler otomatik olarak localStorage'a kaydedilir
  */
 
 class SEOTaskManager {
   constructor() {
     this.currentProject = null;
-    this.projectListCache = [];
+    this.STORAGE_PREFIX = 'seoProject:';
     
     // DOM elemanları
     this.domainInput = document.getElementById('domainInput');
@@ -15,10 +15,6 @@ class SEOTaskManager {
     this.deleteProjectBtn = document.getElementById('deleteProjectBtn');
     this.tasksBody = document.getElementById('tasksBody');
     this.jsonPreview = document.getElementById('jsonPreview');
-    this.saveFileBtn = document.getElementById('saveFileBtn');
-    this.loadFileBtn = document.getElementById('loadFileBtn');
-    this.exportJsonBtn = document.getElementById('exportJsonBtn');
-    this.fileInput = document.getElementById('fileInput');
     
     // Görev template'i
     this.TASKS_TEMPLATE = [
@@ -56,7 +52,6 @@ class SEOTaskManager {
   
   init() {
     this.bindEvents();
-    this.loadProjectListFromLocalStorage();
     this.refreshProjectSelect();
     this.renderTasks();
   }
@@ -76,36 +71,34 @@ class SEOTaskManager {
     });
     
     this.deleteProjectBtn.addEventListener('click', () => this.handleDeleteProject());
-    this.saveFileBtn.addEventListener('click', () => this.handleSaveToFile());
-    this.exportJsonBtn.addEventListener('click', () => this.handleExportJson());
-    this.loadFileBtn.addEventListener('click', () => this.fileInput.click());
-    this.fileInput.addEventListener('change', (e) => this.handleFileLoad(e));
   }
   
-  // localStorage'ı geçici index olarak kullan - sadece proje listesi için
-  loadProjectListFromLocalStorage() {
-    const stored = localStorage.getItem('seoProjectList');
-    if (stored) {
-      try {
-        this.projectListCache = JSON.parse(stored);
-      } catch (e) {
-        this.projectListCache = [];
+  getStorageKey(domain) {
+    return this.STORAGE_PREFIX + domain;
+  }
+  
+  loadExistingDomains() {
+    const domains = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.STORAGE_PREFIX)) {
+        const domain = key.substring(this.STORAGE_PREFIX.length);
+        domains.push(domain);
       }
     }
-  }
-  
-  saveProjectListToLocalStorage() {
-    localStorage.setItem('seoProjectList', JSON.stringify(this.projectListCache));
+    domains.sort();
+    return domains;
   }
   
   refreshProjectSelect(activeDomain = null) {
+    const saved = this.loadExistingDomains();
     this.projectSelect.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.textContent = '— Seç —';
     this.projectSelect.appendChild(placeholder);
     
-    this.projectListCache.sort().forEach(domain => {
+    saved.forEach(domain => {
       const opt = document.createElement('option');
       opt.value = domain;
       opt.textContent = domain;
@@ -130,26 +123,45 @@ class SEOTaskManager {
   loadProject(domain) {
     if (!domain) return;
     
-    // Yeni proje oluştur
-    this.currentProject = {
-      domain,
-      tasks: this.cloneTasksTemplate(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    const key = this.getStorageKey(domain);
+    const existing = localStorage.getItem(key);
     
-    // Proje listesine ekle
-    if (!this.projectListCache.includes(domain)) {
-      this.projectListCache.push(domain);
-      this.saveProjectListToLocalStorage();
+    if (existing) {
+      try {
+        this.currentProject = JSON.parse(existing);
+      } catch (e) {
+        console.error('JSON parse hatası, yeni proje oluşturuluyor', e);
+        this.currentProject = {
+          domain,
+          tasks: this.cloneTasksTemplate(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+      }
+    } else {
+      // Yeni proje oluştur
+      this.currentProject = {
+        domain,
+        tasks: this.cloneTasksTemplate(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.saveCurrentProject();
     }
     
     this.domainInput.value = domain;
     this.refreshProjectSelect(domain);
     this.renderTasks();
     this.updateJsonPreview();
+  }
+  
+  saveCurrentProject() {
+    if (!this.currentProject || !this.currentProject.domain) return;
     
-    this.showNotification(`"${domain}" projesi yüklendi. Değişiklikleri kaydetmek için dosyaya kaydet.`, 'info');
+    this.currentProject.updatedAt = new Date().toISOString();
+    const key = this.getStorageKey(this.currentProject.domain);
+    localStorage.setItem(key, JSON.stringify(this.currentProject));
+    this.updateJsonPreview();
   }
   
   handleDeleteProject() {
@@ -159,12 +171,11 @@ class SEOTaskManager {
       return;
     }
     
-    const ok = confirm(`"${domain}" projesini listeden silmek istediğine emin misin?\n\nNot: Bu sadece listeden siler, data/ klasöründeki JSON dosyasını silmez.`);
+    const ok = confirm(`"${domain}" projesini silmek istediğine emin misin?`);
     if (!ok) return;
     
-    // Listeden çıkar
-    this.projectListCache = this.projectListCache.filter(d => d !== domain);
-    this.saveProjectListToLocalStorage();
+    const key = this.getStorageKey(domain);
+    localStorage.removeItem(key);
     
     if (this.currentProject && this.currentProject.domain === domain) {
       this.currentProject = null;
@@ -173,77 +184,6 @@ class SEOTaskManager {
     }
     
     this.refreshProjectSelect();
-    this.showNotification(`"${domain}" projesi listeden silindi.`, 'success');
-  }
-  
-  handleSaveToFile() {
-    if (!this.currentProject) {
-      alert('Önce bir proje yükle.');
-      return;
-    }
-    
-    this.currentProject.updatedAt = new Date().toISOString();
-    const json = JSON.stringify(this.currentProject, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.currentProject.domain}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    this.showNotification(`"${this.currentProject.domain}.json" dosyası indirildi. data/ klasörüne kaydet.`, 'success');
-  }
-  
-  handleExportJson() {
-    if (!this.currentProject) {
-      alert('Önce bir proje yükle.');
-      return;
-    }
-    
-    const json = JSON.stringify(this.currentProject, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      this.showNotification('JSON panoya kopyalandı!', 'success');
-    }).catch(() => {
-      alert('Panoya kopyalama başarısız oldu.');
-    });
-  }
-  
-  handleFileLoad(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const project = JSON.parse(e.target.result);
-        
-        // Validation
-        if (!project.domain || !project.tasks) {
-          throw new Error('Geçersiz proje formatı');
-        }
-        
-        this.currentProject = project;
-        this.domainInput.value = project.domain;
-        
-        // Proje listesine ekle
-        if (!this.projectListCache.includes(project.domain)) {
-          this.projectListCache.push(project.domain);
-          this.saveProjectListToLocalStorage();
-        }
-        
-        this.refreshProjectSelect(project.domain);
-        this.renderTasks();
-        this.updateJsonPreview();
-        
-        this.showNotification(`"${project.domain}" projesi yüklendi!`, 'success');
-      } catch (error) {
-        alert('JSON dosyası okunamadı: ' + error.message);
-      }
-    };
-    
-    reader.readAsText(file);
-    event.target.value = ''; // Reset input
   }
   
   renderTasks() {
@@ -281,7 +221,7 @@ class SEOTaskManager {
           task.status = 'Bekliyor';
           statusSelect.value = 'Bekliyor';
         }
-        this.updateJsonPreview();
+        this.saveCurrentProject();
       });
       tdCheck.appendChild(checkbox);
       tr.appendChild(tdCheck);
@@ -322,7 +262,7 @@ class SEOTaskManager {
       prioritySelect.value = this.PRIORITY_OPTIONS.includes(task.priority) ? task.priority : 'Orta';
       prioritySelect.addEventListener('change', () => {
         task.priority = prioritySelect.value;
-        this.updateJsonPreview();
+        this.saveCurrentProject();
       });
       tdPriority.appendChild(prioritySelect);
       tr.appendChild(tdPriority);
@@ -347,7 +287,7 @@ class SEOTaskManager {
           task.done = false;
           checkbox.checked = false;
         }
-        this.updateJsonPreview();
+        this.saveCurrentProject();
       });
       tdStatus.appendChild(statusSelect);
       tr.appendChild(tdStatus);
@@ -362,21 +302,6 @@ class SEOTaskManager {
       return;
     }
     this.jsonPreview.value = JSON.stringify(this.currentProject, null, 2);
-  }
-  
-  showNotification(message, type = 'info') {
-    // Basit console notification - isterseniz toast notification eklenebilir
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    
-    // Kullanıcıya görsel feedback için hint alanını kullan
-    const hints = document.querySelectorAll('.hint');
-    if (hints.length > 0) {
-      const originalText = hints[0].innerHTML;
-      hints[0].innerHTML = `<strong style="color: ${type === 'success' ? '#10b981' : type === 'danger' ? '#ef4444' : '#3b82f6'}">✓ ${message}</strong>`;
-      setTimeout(() => {
-        hints[0].innerHTML = originalText;
-      }, 3000);
-    }
   }
 }
 
