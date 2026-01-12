@@ -15,7 +15,58 @@ class SEOTaskManager {
     this.projectSelect = document.getElementById('projectSelect');
     this.deleteProjectBtn = document.getElementById('deleteProjectBtn');
     this.tasksBody = document.getElementById('tasksBody');
-    this.jsonPreview = document.getElementById('jsonPreview');
+    this.toolLinks = document.getElementById('toolLinks');
+    
+    // SEO Araçları
+    this.seoTools = {
+      'Speed Test': [
+        { name: 'GTmetrix Speed Test', url: 'https://gtmetrix.com' },
+        { name: 'HubSpot Website Grader', url: 'https://website.grader.com' },
+        { name: 'PageSpeed Speed Test', url: 'https://pagespeed.web.dev/analysis?url={domain}' },
+        { name: 'Pingdom Speed Test', url: 'https://tools.pingdom.com' }
+      ],
+      'Other Tools': [
+        { name: 'Gzip Check', url: 'https://www.giftofspeed.com/gzip-test/' },
+        { name: 'Markup Validator (w3)', url: 'https://validator.w3.org/check?uri={domain}%2F&charset=%28detect+automatically%29&doctype=Inline&group=0' },
+        { name: 'Meta Tag Check', url: 'https://www.opengraph.xyz/url/{domain}' },
+        { name: 'Robots.txt Generator', url: 'https://www.seoptimer.com/robots-txt-generator' },
+        { name: 'SEMRush', url: 'https://www.semrush.com' },
+        { name: 'SEO Site Checker', url: 'https://sitechecker.pro/' },
+        { name: 'SEO Site Checkup', url: 'https://seositecheckup.com/seo-audit/{domain}' },
+        { name: 'Schema.org', url: 'https://schema.org' },
+        { name: 'SerpStack', url: 'https://serpstack.com' },
+        { name: 'Sitemap Generator', url: 'https://www.xml-sitemaps.com' },
+        { name: 'WCAG Check', url: 'https://www.accessibilitychecker.org/audit/?website={domain}&flag=ww' },
+        { name: 'Small SEO Tools', url: 'https://smallseotools.com/' },
+        { name: 'ahrefs SEO Tools', url: 'https://ahrefs.com/free-seo-tools' },
+        { name: 'SEO Site Checkup Tools', url: 'https://seositecheckup.com/tools' }
+      ],
+      'DNS Tools': [
+        { name: 'DNS Check SecurityTrails', url: 'https://securitytrails.com/domain/{domain}/dns' },
+        { name: 'DNS Check host.io', url: 'https://host.io/{domain}' },
+        { name: 'DNS Checker', url: 'https://dnschecker.org/#A/{domain}' },
+        { name: 'DNS Spy', url: 'https://dnsspy.io/scan/{domain}' },
+        { name: 'MX ToolBox', url: 'https://mxtoolbox.com/SuperTool.aspx?action=mx%3a{domain}&run=toolpage#' },
+        { name: 'Sucuri Blacklist Check', url: 'https://labs.sucuri.net/blacklist/info/?domain={domain}' },
+        { name: 'ZONE Master', url: 'https://zonemaster.net/' },
+        { name: 'intoDNS', url: 'https://intodns.com/{domain}' }
+      ],
+      'Anti Malware': [
+        { name: 'Abuse IP Db', url: 'https://www.abuseipdb.com/check/{domain}' },
+        { name: 'Google Güvenli Tarama', url: 'https://transparencyreport.google.com/safe-browsing/search?url={domain}' },
+        { name: 'Mcafee Web Advisor', url: 'https://www.siteadvisor.com/sitereport.html?url={domain}' },
+        { name: 'MyWOT', url: 'https://www.mywot.com/scorecard/{domain}' },
+        { name: 'Norton Safe Web', url: 'https://safeweb.norton.com/report?url={domain}' },
+        { name: 'Sucuri Site Check', url: 'https://sitecheck.sucuri.net/results/{domain}' },
+        { name: 'Threat Intelligence Platform', url: 'https://threatintelligenceplatform.com/' },
+        { name: 'URL Scan', url: 'https://urlscan.io/' },
+        { name: 'Virus Total', url: 'https://www.virustotal.com/gui/domain/{domain}' },
+        { name: 'WebPageTest', url: 'https://www.webpagetest.org/' },
+        { name: 'Website Malware Scanner', url: 'https://quttera.com/' },
+        { name: 'Website Reputation Checker', url: 'https://www.urlvoid.com/scan/{domain}/' },
+        { name: 'Yandex Safety Check', url: 'https://yandex.com/safety/?url={domain}' }
+      ]
+    };
     
     // Görev template'i
     this.TASKS_TEMPLATE = [
@@ -238,7 +289,7 @@ class SEOTaskManager {
       this.domainInput.value = domain;
       this.refreshProjectSelect(domain);
       this.renderTasks();
-      this.updateJsonPreview();
+      this.renderToolLinks();
     } catch (e) {
       console.error('Proje yükleme hatası:', e);
       alert('Proje yüklenemedi: ' + e.message);
@@ -261,8 +312,6 @@ class SEOTaskManager {
       const writable = await fileHandle.createWritable();
       await writable.write(JSON.stringify(this.currentProject, null, 2));
       await writable.close();
-      
-      this.updateJsonPreview();
     } catch (e) {
       console.error('Kaydetme hatası:', e);
       alert('Dosya kaydedilemedi: ' + e.message);
@@ -286,7 +335,7 @@ class SEOTaskManager {
       if (this.currentProject && this.currentProject.domain === domain) {
         this.currentProject = null;
         this.tasksBody.innerHTML = '';
-        this.jsonPreview.value = '';
+        this.toolLinks.innerHTML = '<p class="hint">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>';
       }
       
       this.refreshProjectSelect();
@@ -298,6 +347,31 @@ class SEOTaskManager {
   
   cloneTasksTemplate() {
     return this.TASKS_TEMPLATE.map(t => ({ ...t }));
+  }
+  
+  renderToolLinks() {
+    if (!this.currentProject || !this.currentProject.domain) {
+      this.toolLinks.innerHTML = '<p class="hint">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>';
+      return;
+    }
+    
+    const domain = this.currentProject.domain;
+    let html = '';
+    
+    for (const [category, tools] of Object.entries(this.seoTools)) {
+      html += `<div class="tool-links-section">`;
+      html += `<h3>${category}</h3>`;
+      html += `<div class="tool-links-grid">`;
+      
+      tools.forEach(tool => {
+        const url = tool.url.replace(/{domain}/g, domain);
+        html += `<a href="${url}" target="_blank" class="tool-link">${tool.name}</a>`;
+      });
+      
+      html += `</div></div>`;
+    }
+    
+    this.toolLinks.innerHTML = html;
   }
   
   renderTasks() {
@@ -408,14 +482,6 @@ class SEOTaskManager {
       
       this.tasksBody.appendChild(tr);
     });
-  }
-  
-  updateJsonPreview() {
-    if (!this.currentProject) {
-      this.jsonPreview.value = '';
-      return;
-    }
-    this.jsonPreview.value = JSON.stringify(this.currentProject, null, 2);
   }
 }
 
