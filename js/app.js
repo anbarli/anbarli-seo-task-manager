@@ -1,14 +1,12 @@
 /**
- * SEO Görev Yöneticisi - JSON Dosya Sistemi
- * Her domain data/ klasöründe ayrı JSON dosyası olarak saklanır
- * File System Access API kullanılır
+ * SEO Görev Yöneticisi - Otomatik Kayıt Sistemi
+ * Veriler localStorage'da saklanır
  */
 
 class SEOTaskManager {
   constructor() {
     this.currentProject = null;
-    this.dataDirectoryHandle = null;
-    this.projectFiles = new Map(); // domain -> fileHandle mapping
+    this.STORAGE_PREFIX = 'seoProject:';
     
     // DOM elemanları
     this.domainInput = document.getElementById('domainInput');
@@ -17,7 +15,6 @@ class SEOTaskManager {
     this.deleteProjectBtn = document.getElementById('deleteProjectBtn');
     this.tasksBody = document.getElementById('tasksBody');
     this.jsonPreview = document.getElementById('jsonPreview');
-    this.selectFolderBtn = document.getElementById('selectFolderBtn');
     
     // Görev template'i
     this.TASKS_TEMPLATE = [
@@ -55,79 +52,11 @@ class SEOTaskManager {
   
   init() {
     this.bindEvents();
-    this.checkFileSystemSupport();
-    this.loadDirectoryHandleFromStorage();
+    this.refreshProjectSelect();
     this.renderTasks();
   }
   
-  checkFileSystemSupport() {
-    if (!('showDirectoryPicker' in window)) {
-      alert('Tarayıcınız File System Access API desteklemiyor. Chrome, Edge veya Opera kullanın.');
-    }
-  }
-  
-  async loadDirectoryHandleFromStorage() {
-    // IndexedDB'den daha önce seçilmiş klasör handle'ını yükle
-    try {
-      const db = await this.openDatabase();
-      const handle = await this.getStoredDirectoryHandle(db);
-      if (handle) {
-        // İzin kontrolü
-        const permission = await handle.queryPermission({ mode: 'readwrite' });
-        if (permission === 'granted') {
-          this.dataDirectoryHandle = handle;
-          await this.scanProjectFiles();
-        } else {
-          // İzin iste
-          const newPermission = await handle.requestPermission({ mode: 'readwrite' });
-          if (newPermission === 'granted') {
-            this.dataDirectoryHandle = handle;
-            await this.scanProjectFiles();
-          }
-        }
-      }
-    } catch (e) {
-      console.log('Klasör handle yüklenemedi:', e);
-    }
-  }
-  
-  async openDatabase() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('SEOTaskManagerDB', 1);
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains('settings')) {
-          db.createObjectStore('settings');
-        }
-      };
-    });
-  }
-  
-  async getStoredDirectoryHandle(db) {
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['settings'], 'readonly');
-      const store = transaction.objectStore('settings');
-      const request = store.get('dataDirectoryHandle');
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-  
-  async storeDirectoryHandle(handle) {
-    const db = await this.openDatabase();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['settings'], 'readwrite');
-      const store = transaction.objectStore('settings');
-      const request = store.put(handle, 'dataDirectoryHandle');
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
-  
   bindEvents() {
-    this.selectFolderBtn.addEventListener('click', () => this.handleSelectFolder());
     this.loadDomainBtn.addEventListener('click', () => this.handleLoadDomain());
     this.domainInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -144,53 +73,32 @@ class SEOTaskManager {
     this.deleteProjectBtn.addEventListener('click', () => this.handleDeleteProject());
   }
   
-  async handleSelectFolder() {
-    try {
-      const dirHandle = await window.showDirectoryPicker({
-        mode: 'readwrite',
-        startIn: 'documents'
-      });
-      
-      this.dataDirectoryHandle = dirHandle;
-      await this.storeDirectoryHandle(dirHandle);
-      await this.scanProjectFiles();
-      
-      alert(`"${dirHandle.name}" klasörü seçildi. Projeler bu klasöre kaydedilecek.`);
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        console.error('Klasör seçme hatası:', e);
-      }
-    }
+  getStorageKey(domain) {
+    return this.STORAGE_PREFIX + domain;
   }
   
-  async scanProjectFiles() {
-    if (!this.dataDirectoryHandle) return;
-    
-    this.projectFiles.clear();
-    
-    try {
-      for await (const entry of this.dataDirectoryHandle.values()) {
-        if (entry.kind === 'file' && entry.name.endsWith('.json')) {
-          const domain = entry.name.replace('.json', '');
-          this.projectFiles.set(domain, entry);
-        }
+  loadExistingDomains() {
+    const domains = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(this.STORAGE_PREFIX)) {
+        const domain = key.substring(this.STORAGE_PREFIX.length);
+        domains.push(domain);
       }
-      
-      this.refreshProjectSelect();
-    } catch (e) {
-      console.error('Dosya tarama hatası:', e);
     }
+    domains.sort();
+    return domains;
   }
   
   refreshProjectSelect(activeDomain = null) {
+    const saved = this.loadExistingDomains();
     this.projectSelect.innerHTML = '';
     const placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.textContent = '— Seç —';
     this.projectSelect.appendChild(placeholder);
     
-    const domains = Array.from(this.projectFiles.keys()).sort();
-    domains.forEach(domain => {
+    saved.forEach(domain => {
       const opt = document.createElement('option');
       opt.value = domain;
       opt.textContent = domain;
@@ -199,106 +107,79 @@ class SEOTaskManager {
     });
   }
   
-  async handleLoadDomain() {
+  handleLoadDomain() {
     const domain = this.domainInput.value.trim();
     if (!domain) {
       alert('Lütfen bir domain veya proje adı gir.');
       return;
     }
-    
-    if (!this.dataDirectoryHandle) {
-      alert('Önce "Klasör Seç" butonuna tıklayarak data/ klasörünü seç.');
-      return;
-    }
-    
-    await this.loadProject(domain);
+    this.loadProject(domain);
   }
   
-  async loadProject(domain) {
-    if (!domain || !this.dataDirectoryHandle) return;
+  loadProject(domain) {
+    if (!domain) return;
     
-    try {
-      const fileName = `${domain}.json`;
-      let fileHandle = this.projectFiles.get(domain);
-      
-      if (fileHandle) {
-        // Var olan dosyayı yükle
-        const file = await fileHandle.getFile();
-        const content = await file.text();
-        this.currentProject = JSON.parse(content);
-      } else {
-        // Yeni proje oluştur
+    const key = this.getStorageKey(domain);
+    const existing = localStorage.getItem(key);
+    
+    if (existing) {
+      try {
+        this.currentProject = JSON.parse(existing);
+      } catch (e) {
+        console.error('JSON parse hatası, yeni proje oluşturuluyor', e);
         this.currentProject = {
           domain,
           tasks: this.cloneTasksTemplate(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
-        
-        // Dosyayı oluştur
-        fileHandle = await this.dataDirectoryHandle.getFileHandle(fileName, { create: true });
-        this.projectFiles.set(domain, fileHandle);
-        await this.saveCurrentProject();
       }
-      
-      this.domainInput.value = domain;
-      this.refreshProjectSelect(domain);
-      this.renderTasks();
-      this.updateJsonPreview();
-    } catch (e) {
-      console.error('Proje yükleme hatası:', e);
-      alert('Proje yüklenemedi: ' + e.message);
+    } else {
+      // Yeni proje oluştur
+      this.currentProject = {
+        domain,
+        tasks: this.cloneTasksTemplate(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.saveCurrentProject();
     }
-  }
-  
-  async saveCurrentProject() {
-    if (!this.currentProject || !this.currentProject.domain || !this.dataDirectoryHandle) return;
     
-    try {
-      this.currentProject.updatedAt = new Date().toISOString();
-      const fileName = `${this.currentProject.domain}.json`;
-      
-      let fileHandle = this.projectFiles.get(this.currentProject.domain);
-      if (!fileHandle) {
-        fileHandle = await this.dataDirectoryHandle.getFileHandle(fileName, { create: true });
-        this.projectFiles.set(this.currentProject.domain, fileHandle);
-      }
-      
-      const writable = await fileHandle.createWritable();
-      await writable.write(JSON.stringify(this.currentProject, null, 2));
-      await writable.close();
-      
-      this.updateJsonPreview();
-    } catch (e) {
-      console.error('Kaydetme hatası:', e);
-    }
+    this.domainInput.value = domain;
+    this.refreshProjectSelect(domain);
+    this.renderTasks();
+    this.updateJsonPreview();
   }
   
-  async handleDeleteProject() {
+  saveCurrentProject() {
+    if (!this.currentProject || !this.currentProject.domain) return;
+    
+    this.currentProject.updatedAt = new Date().toISOString();
+    const key = this.getStorageKey(this.currentProject.domain);
+    localStorage.setItem(key, JSON.stringify(this.currentProject));
+    this.updateJsonPreview();
+  }
+  
+  handleDeleteProject() {
     const domain = this.projectSelect.value || (this.currentProject && this.currentProject.domain);
     if (!domain) {
       alert('Silmek için önce bir proje seç.');
       return;
     }
     
-    const ok = confirm(`"${domain}" projesini silmek istediğine emin misin?\n\nNot: JSON dosyası data/ klasöründen silinecek.`);
+    const ok = confirm(`"${domain}" projesini silmek istediğine emin misin?`);
     if (!ok) return;
     
-    try {
-      await this.dataDirectoryHandle.removeEntry(`${domain}.json`);
-      this.projectFiles.delete(domain);
-      
-      if (this.currentProject && this.currentProject.domain === domain) {
-        this.currentProject = null;
-        this.tasksBody.innerHTML = '';
-        this.jsonPreview.value = '';
-      }
-      
-      this.refreshProjectSelect();
-    } catch (e) {
-      console.error('Silme hatası:', e);
-      alert('Proje silinemedi: ' + e.message);
+    const key = this.getStorageKey(domain);
+    localStorage.removeItem(key);
+    
+    if (this.currentProject && this.currentProject.domain === domain) {
+      this.currentProject = null;
+      this.tasksBody.innerHTML = '';
+      this.jsonPreview.value = '';
     }
+    
+    this.refreshProjectSelect();
   }
   
   cloneTasksTemplate() {
