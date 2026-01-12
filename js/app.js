@@ -17,6 +17,16 @@ class SEOTaskManager {
     this.tasksBody = document.getElementById('tasksBody');
     this.toolLinks = document.getElementById('toolLinks');
     
+    // Modal elemanları
+    this.taskModal = document.getElementById('taskModal');
+    this.addTaskBtn = document.getElementById('addTaskBtn');
+    this.taskForm = document.getElementById('taskForm');
+    this.modalTitle = document.getElementById('modalTitle');
+    this.modalClose = document.querySelector('.modal-close');
+    this.cancelModalBtn = document.getElementById('cancelModalBtn');
+    
+    this.editingTaskId = null;
+    
     // SEO Araçları
     this.seoTools = {
       'Speed Test': [
@@ -70,30 +80,30 @@ class SEOTaskManager {
     
     // Görev template'i
     this.TASKS_TEMPLATE = [
-      { id: "hosting", title: "Hosting kontrolü", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Hosting hızını optimize et", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "ssl", title: "SSL kurulumu", category: "Teknik SEO", subcategory: "Güvenlik", description: "HTTPS/SSL sertifikasını doğrula", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "mobile", title: "Mobil uyumluluk testi", category: "Teknik SEO", subcategory: "Mobil SEO", description: "Google Mobile-Friendly Test çalıştır", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "url-structure", title: "URL yapı düzenlemesi", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Temiz ve okunabilir URL yapısı oluştur", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "robots", title: "robots.txt yapılandırma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Gereksiz sayfaları engelle, önemli sayfaları izinle", priority: "Yüksek", status: "Devam ediyor", done: false },
-      { id: "sitemap", title: "XML Sitemap oluşturma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Sitemap oluştur ve Google Search Console'a gönder", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "title-optimization", title: "Title optimizasyonu", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya benzersiz, açıklayıcı title ekle", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "meta-description", title: "Meta description yazımı", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya tıklama odaklı meta description yaz", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "h1", title: "H1 optimizasyonu", category: "On-Page SEO", subcategory: "İçerik", description: "Her sayfada tek ve net bir H1 kullan", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "images-compress", title: "Görselleri sıkıştır", category: "Görsel SEO", subcategory: "Performans", description: "Görselleri mümkünse WebP formatına çevir ve sıkıştır", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "images-alt", title: "ALT metin ekle", category: "Görsel SEO", subcategory: "Erişilebilirlik", description: "Tüm görsellere anlamlı ALT metni ekle", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "internal-links", title: "İç bağlantı ekleme", category: "İç Bağlantı", subcategory: "Navigasyon", description: "Sayfalar arasında mantıklı iç link yapısı oluştur", priority: "Yüksek", status: "Devam ediyor", done: false },
-      { id: "orphan-pages", title: "Yetim sayfa kontrolü", category: "İç Bağlantı", subcategory: "Teknik", description: "Orphan (bağlantısız) sayfaları tespit et", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "backlink-audit", title: "Backlink analizi", category: "Off-Page SEO", subcategory: "Bağlantı Profili", description: "Zararlı/spam backlinkleri tespit ve temizle", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "pagespeed", title: "PageSpeed testi", category: "Performans", subcategory: "Core Web Vitals", description: "PageSpeed Insights ile hız ve CWV analiz et", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "css-js", title: "CSS/JS optimizasyonu", category: "Performans", subcategory: "Kod Optimizasyon", description: "CSS/JS dosyalarını küçült ve mümkünse ertele (defer)", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "gsc-setup", title: "GSC doğrulama", category: "Search Console", subcategory: "Setup", description: "Google Search Console mülkünü ekle ve doğrula", priority: "Yüksek", status: "Tamamlandı", done: true },
-      { id: "gsc-coverage", title: "Dizine ekleme sorunları çözme", category: "Search Console", subcategory: "Coverage", description: "Coverage raporundaki hataları çöz", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "ga4-setup", title: "GA4 kurulumu", category: "Analytics", subcategory: "Setup", description: "Google Analytics 4 kurulumu ve bağlantı", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "goals", title: "Dönüşüm hedeflerini ayarla", category: "Analytics", subcategory: "Ölçümleme", description: "Dönüşüm hedefleri ve event tracking yapılandır", priority: "Yüksek", status: "Bekliyor", done: false },
-      { id: "kw-research", title: "Anahtar kelime araştırması", category: "İçerik Stratejisi", subcategory: "Keyword Research", description: "Temel anahtar kelime listesini çıkar (Ahrefs, Semrush vb.)", priority: "Yüksek", status: "Devam ediyor", done: false },
-      { id: "content-calendar", title: "İçerik takvimi hazırlama", category: "İçerik Stratejisi", subcategory: "Planlama", description: "Blog/landing sayfa yayın takvimi oluştur", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "mobile-ux", title: "Mobil UX kontrol", category: "UX", subcategory: "Mobil", description: "Mobil gezinme ve okunabilirliği kontrol et", priority: "Orta", status: "Bekliyor", done: false },
-      { id: "cta", title: "CTA optimizasyonu", category: "UX", subcategory: "Dönüşüm", description: "Net, görünür ve ikna edici CTA butonları tasarla", priority: "Orta", status: "Bekliyor", done: false }
+      { id: "hosting", title: "Hosting kontrolü", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Hosting hızını optimize et", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "ssl", title: "SSL kurulumu", category: "Teknik SEO", subcategory: "Güvenlik", description: "HTTPS/SSL sertifikasını doğrula", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "mobile", title: "Mobil uyumluluk testi", category: "Teknik SEO", subcategory: "Mobil SEO", description: "Google Mobile-Friendly Test çalıştır", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "url-structure", title: "URL yapı düzenlemesi", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Temiz ve okunabilir URL yapısı oluştur", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "robots", title: "robots.txt yapılandırma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Gereksiz sayfaları engelle, önemli sayfaları izinle", priority: "Yüksek", status: "Devam ediyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "sitemap", title: "XML Sitemap oluşturma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Sitemap oluştur ve Google Search Console'a gönder", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "title-optimization", title: "Title optimizasyonu", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya benzersiz, açıklayıcı title ekle", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "meta-description", title: "Meta description yazımı", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya tıklama odaklı meta description yaz", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "h1", title: "H1 optimizasyonu", category: "On-Page SEO", subcategory: "İçerik", description: "Her sayfada tek ve net bir H1 kullan", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "images-compress", title: "Görselleri sıkıştır", category: "Görsel SEO", subcategory: "Performans", description: "Görselleri mümkünse WebP formatına çevir ve sıkıştır", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "images-alt", title: "ALT metin ekle", category: "Görsel SEO", subcategory: "Erişilebilirlik", description: "Tüm görsellere anlamlı ALT metni ekle", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "internal-links", title: "İç bağlantı ekleme", category: "İç Bağlantı", subcategory: "Navigasyon", description: "Sayfalar arasında mantıklı iç link yapısı oluştur", priority: "Yüksek", status: "Devam ediyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "orphan-pages", title: "Yetim sayfa kontrolü", category: "İç Bağlantı", subcategory: "Teknik", description: "Orphan (bağlantısız) sayfaları tespit et", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "backlink-audit", title: "Backlink analizi", category: "Off-Page SEO", subcategory: "Bağlantı Profili", description: "Zararlı/spam backlinkleri tespit ve temizle", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "pagespeed", title: "PageSpeed testi", category: "Performans", subcategory: "Core Web Vitals", description: "PageSpeed Insights ile hız ve CWV analiz et", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "css-js", title: "CSS/JS optimizasyonu", category: "Performans", subcategory: "Kod Optimizasyon", description: "CSS/JS dosyalarını küçült ve mümkünse ertele (defer)", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "gsc-setup", title: "GSC doğrulama", category: "Search Console", subcategory: "Setup", description: "Google Search Console mülkünü ekle ve doğrula", priority: "Yüksek", status: "Tamamlandı", done: true, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "gsc-coverage", title: "Dizine ekleme sorunları çözme", category: "Search Console", subcategory: "Coverage", description: "Coverage raporundaki hataları çöz", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "ga4-setup", title: "GA4 kurulumu", category: "Analytics", subcategory: "Setup", description: "Google Analytics 4 kurulumu ve bağlantı", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "goals", title: "Dönüşüm hedeflerini ayarla", category: "Analytics", subcategory: "Ölçümleme", description: "Dönüşüm hedefleri ve event tracking yapılandır", priority: "Yüksek", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "kw-research", title: "Anahtar kelime araştırması", category: "İçerik Stratejisi", subcategory: "Keyword Research", description: "Temel anahtar kelime listesini çıkar (Ahrefs, Semrush vb.)", priority: "Yüksek", status: "Devam ediyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "content-calendar", title: "İçerik takvimi hazırlama", category: "İçerik Stratejisi", subcategory: "Planlama", description: "Blog/landing sayfa yayın takvimi oluştur", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "mobile-ux", title: "Mobil UX kontrol", category: "UX", subcategory: "Mobil", description: "Mobil gezinme ve okunabilirliği kontrol et", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" },
+      { id: "cta", title: "CTA optimizasyonu", category: "UX", subcategory: "Dönüşüm", description: "Net, görünür ve ikna edici CTA butonları tasarla", priority: "Orta", status: "Bekliyor", done: false, startDate: null, dueDate: null, completedDate: null, notes: "" }
     ];
     
     this.PRIORITY_OPTIONS = ["Düşük", "Orta", "Yüksek"];
@@ -225,6 +235,17 @@ class SEOTaskManager {
     });
     
     this.deleteProjectBtn.addEventListener('click', () => this.handleDeleteProject());
+    
+    // Modal event listeners
+    this.addTaskBtn.addEventListener('click', () => this.openTaskModal());
+    this.modalClose.addEventListener('click', () => this.closeTaskModal());
+    this.cancelModalBtn.addEventListener('click', () => this.closeTaskModal());
+    this.taskForm.addEventListener('submit', (e) => this.handleTaskSubmit(e));
+    
+    // Modal dışına tıklayınca kapat
+    this.taskModal.addEventListener('click', (e) => {
+      if (e.target === this.taskModal) this.closeTaskModal();
+    });
   }
   
   refreshProjectSelect(activeDomain = null) {
@@ -349,6 +370,86 @@ class SEOTaskManager {
     return this.TASKS_TEMPLATE.map(t => ({ ...t }));
   }
   
+  openTaskModal(task = null) {
+    if (!this.currentProject) {
+      alert('Önce bir proje yükle.');
+      return;
+    }
+    
+    this.editingTaskId = task ? task.id : null;
+    
+    if (task) {
+      this.modalTitle.textContent = 'Görevi Düzenle';
+      document.getElementById('taskTitle').value = task.title || '';
+      document.getElementById('taskCategory').value = task.category || '';
+      document.getElementById('taskSubcategory').value = task.subcategory || '';
+      document.getElementById('taskDescription').value = task.description || '';
+      document.getElementById('taskPriority').value = task.priority || 'Orta';
+      document.getElementById('taskStatus').value = task.status || 'Bekliyor';
+      document.getElementById('taskStartDate').value = task.startDate || '';
+      document.getElementById('taskDueDate').value = task.dueDate || '';
+      document.getElementById('taskNotes').value = task.notes || '';
+    } else {
+      this.modalTitle.textContent = 'Yeni Görev Ekle';
+      this.taskForm.reset();
+    }
+    
+    this.taskModal.classList.add('show');
+  }
+  
+  closeTaskModal() {
+    this.taskModal.classList.remove('show');
+    this.taskForm.reset();
+    this.editingTaskId = null;
+  }
+  
+  handleTaskSubmit(e) {
+    e.preventDefault();
+    
+    const taskData = {
+      id: this.editingTaskId || 'task-' + Date.now(),
+      title: document.getElementById('taskTitle').value,
+      category: document.getElementById('taskCategory').value,
+      subcategory: document.getElementById('taskSubcategory').value,
+      description: document.getElementById('taskDescription').value,
+      priority: document.getElementById('taskPriority').value,
+      status: document.getElementById('taskStatus').value,
+      startDate: document.getElementById('taskStartDate').value || null,
+      dueDate: document.getElementById('taskDueDate').value || null,
+      notes: document.getElementById('taskNotes').value || '',
+      done: document.getElementById('taskStatus').value === 'Tamamlandı',
+      completedDate: null
+    };
+    
+    if (this.editingTaskId) {
+      const taskIndex = this.currentProject.tasks.findIndex(t => t.id === this.editingTaskId);
+      if (taskIndex !== -1) {
+        taskData.completedDate = this.currentProject.tasks[taskIndex].completedDate;
+        if (taskData.done && !taskData.completedDate) {
+          taskData.completedDate = new Date().toISOString().split('T')[0];
+        }
+        this.currentProject.tasks[taskIndex] = taskData;
+      }
+    } else {
+      if (taskData.done) {
+        taskData.completedDate = new Date().toISOString().split('T')[0];
+      }
+      this.currentProject.tasks.push(taskData);
+    }
+    
+    this.saveCurrentProject();
+    this.renderTasks();
+    this.closeTaskModal();
+  }
+  
+  deleteTask(taskId) {
+    if (!confirm('Bu görevi silmek istediğine emin misin?')) return;
+    
+    this.currentProject.tasks = this.currentProject.tasks.filter(t => t.id !== taskId);
+    this.saveCurrentProject();
+    this.renderTasks();
+  }
+  
   renderToolLinks() {
     if (!this.currentProject || !this.currentProject.domain) {
       this.toolLinks.innerHTML = '<p class="hint">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>';
@@ -427,14 +528,16 @@ class SEOTaskManager {
       tdCat.appendChild(catSpan);
       tr.appendChild(tdCat);
       
-      // Alt kategori
-      const tdSubcat = document.createElement('td');
-      tdSubcat.textContent = task.subcategory || '';
-      tr.appendChild(tdSubcat);
-      
       // Açıklama
       const tdDesc = document.createElement('td');
       tdDesc.textContent = task.description || '';
+      tdDesc.style.maxWidth = '250px';
+      tdDesc.style.overflow = 'hidden';
+      tdDesc.style.textOverflow = 'ellipsis';
+      tdDesc.style.whiteSpace = 'nowrap';
+      if (task.notes) {
+        tdDesc.title = `${task.description}\n\nNotlar: ${task.notes}`;
+      }
       tr.appendChild(tdDesc);
       
       // Öncelik
@@ -479,6 +582,54 @@ class SEOTaskManager {
       });
       tdStatus.appendChild(statusSelect);
       tr.appendChild(tdStatus);
+      
+      // Başlangıç tarihi
+      const tdStart = document.createElement('td');
+      tdStart.className = 'date-cell';
+      tdStart.textContent = task.startDate ? new Date(task.startDate).toLocaleDateString('tr-TR') : '-';
+      tr.appendChild(tdStart);
+      
+      // Hedef bitiş tarihi
+      const tdDue = document.createElement('td');
+      tdDue.className = 'date-cell';
+      if (task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (!task.done && dueDate < today) {
+          tdDue.className += ' overdue';
+          tdDue.textContent = dueDate.toLocaleDateString('tr-TR') + ' ⚠️';
+        } else {
+          tdDue.textContent = dueDate.toLocaleDateString('tr-TR');
+        }
+      } else {
+        tdDue.textContent = '-';
+      }
+      tr.appendChild(tdDue);
+      
+      // Aksiyon butonları
+      const tdAction = document.createElement('td');
+      tdAction.style.textAlign = 'center';
+      const actionDiv = document.createElement('div');
+      actionDiv.className = 'action-buttons';
+      
+      const editBtn = document.createElement('button');
+      editBtn.className = 'action-btn edit';
+      editBtn.textContent = '✏️';
+      editBtn.title = 'Düzenle';
+      editBtn.addEventListener('click', () => this.openTaskModal(task));
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'action-btn delete';
+      deleteBtn.textContent = '🗑️';
+      deleteBtn.title = 'Sil';
+      deleteBtn.addEventListener('click', () => this.deleteTask(task.id));
+      
+      actionDiv.appendChild(editBtn);
+      actionDiv.appendChild(deleteBtn);
+      tdAction.appendChild(actionDiv);
+      tr.appendChild(tdAction);
       
       this.tasksBody.appendChild(tr);
     });

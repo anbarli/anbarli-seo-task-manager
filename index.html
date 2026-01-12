@@ -48,7 +48,12 @@
     </div>
 
     <div class="card tasks-card">
-      <h2 style="margin-top:0; font-size:16px;">Görevler</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="margin:0; font-size:16px;">Görevler</h2>
+        <button id="addTaskBtn" class="button success" style="min-height: 32px; padding: 6px 12px;">
+          ➕ Yeni Görev Ekle
+        </button>
+      </div>
       <p class="hint">
         Bir domain yükledikten sonra görevleri güncelleyebilirsin. Checkbox, öncelik ve durum alanı JSON'a yazılır.
       </p>
@@ -59,10 +64,12 @@
               <th class="checkbox-cell">Bitti</th>
               <th>Görev</th>
               <th>Kategori</th>
-              <th>Alt Kategori</th>
               <th>Açıklama</th>
               <th>Öncelik</th>
               <th>Durum</th>
+              <th>Başlangıç</th>
+              <th>Hedef Bitiş</th>
+              <th style="text-align: center;">Aksiyon</th>
             </tr>
           </thead>
           <tbody id="tasksBody">
@@ -77,6 +84,81 @@
       <div id="toolLinks">
         <p class="hint">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Yeni Görev Ekle</h2>
+        <span class="modal-close">&times;</span>
+      </div>
+      <form id="taskForm">
+        <div class="form-group">
+          <label for="taskTitle">Görev Adı *</label>
+          <input type="text" id="taskTitle" class="input" required />
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="taskCategory">Kategori *</label>
+            <input type="text" id="taskCategory" class="input" required />
+          </div>
+          
+          <div class="form-group">
+            <label for="taskSubcategory">Alt Kategori</label>
+            <input type="text" id="taskSubcategory" class="input" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="taskDescription">Açıklama</label>
+          <textarea id="taskDescription" class="input" rows="3"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="taskPriority">Öncelik</label>
+            <select id="taskPriority" class="select">
+              <option value="Düşük">Düşük</option>
+              <option value="Orta" selected>Orta</option>
+              <option value="Yüksek">Yüksek</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="taskStatus">Durum</label>
+            <select id="taskStatus" class="select">
+              <option value="Bekliyor" selected>Bekliyor</option>
+              <option value="Devam ediyor">Devam ediyor</option>
+              <option value="Tamamlandı">Tamamlandı</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="taskStartDate">Başlangıç Tarihi</label>
+            <input type="date" id="taskStartDate" class="input" />
+          </div>
+          
+          <div class="form-group">
+            <label for="taskDueDate">Hedef Bitiş Tarihi</label>
+            <input type="date" id="taskDueDate" class="input" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="taskNotes">Notlar / Yorumlar</label>
+          <textarea id="taskNotes" class="input" rows="4" placeholder="İlerleme notları, yorumlar, özel notlar..."></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="button secondary" id="cancelModalBtn">İptal</button>
+          <button type="submit" class="button success">Kaydet</button>
+        </div>
+      </form>
     </div>
   </div>
 
