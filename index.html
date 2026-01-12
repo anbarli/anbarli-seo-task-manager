@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>SEO Görev Yöneticisi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #f3f4f6;
+      color: #111827;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .app-container {
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+
+    .field-group label {
+      color: #4b5563;
+      font-weight: 500;
+    }
+
+    .input, .select, .button {
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      padding: 8px 10px;
+      font-size: 14px;
+      outline: none;
+      min-height: 36px;
+    }
+
+    .input:focus, .select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.3);
+    }
+
+    .input {
+      min-width: 220px;
+    }
+
+    .button {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      padding: 8px 14px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .button:hover {
+      background: #1d4ed8;
+    }
+
+    .button.secondary {
+      background: #f3f4f6;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    .button.secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .select {
+      min-width: 180px;
+      background-color: #fff;
+    }
+
+    .tasks-card {
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: #f9fafb;
+    }
+
+    th, td {
+      padding: 8px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      font-weight: 600;
+      color: #4b5563;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    tr:hover td {
+      background-color: #f9fafb;
+    }
+
+    .checkbox-cell {
+      text-align: center;
+      width: 40px;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 500;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #dbeafe;
+    }
+
+    .priority-high {
+      background-color: #fee2e2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    .priority-medium {
+      background-color: #fef3c7;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+
+    .priority-low {
+      background-color: #ecfdf3;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+
+    .status-select, .priority-select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .json-preview-card {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .json-preview-card h2 {
+      margin: 0 0 6px;
+      font-size: 13px;
+    }
+
+    .json-preview {
+      width: 100%;
+      min-height: 100px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      background: #f9fafb;
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input, .select {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="card">
+      <h1>SEO Görev Yöneticisi</h1>
+      <p class="subtitle">
+        Domain seç, görevleri güncelle, her domain için ayrı JSON kaydedilsin (tarayıcı localStorage).
+      </p>
+
+      <div class="top-bar">
+        <div class="field-group">
+          <label for="domainInput">Domain / Proje Adı</label>
+          <input id="domainInput" class="input" placeholder="ör. example.com veya proje-adi" />
+        </div>
+
+        <div class="field-group">
+          <label>&nbsp;</label>
+          <button id="loadDomainBtn" class="button">
+            ⚙️ Yükle / Oluştur
+          </button>
+        </div>
+
+        <div class="field-group">
+          <label for="projectSelect">Kayıtlı JSON Projeleri</label>
+          <select id="projectSelect" class="select">
+            <option value="">— Seç —</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label>&nbsp;</label>
+          <button id="deleteProjectBtn" class="button secondary">
+            🗑️ Seçili Projeyi Sil
+          </button>
+        </div>
+      </div>
+      <p class="hint">
+        Not: Her değişiklik otomatik kaydedilir. Proje JSON'ları <strong>localStorage</strong>'da tutulur.
+      </p>
+    </div>
+
+    <div class="card tasks-card">
+      <h2 style="margin-top:0; font-size:16px;">Görevler</h2>
+      <p class="hint">
+        Bir domain yükledikten sonra görevleri güncelleyebilirsin. Checkbox, öncelik ve durum alanı JSON'a yazılır.
+      </p>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th class="checkbox-cell">Bitti</th>
+              <th>Görev</th>
+              <th>Kategori</th>
+              <th>Alt Kategori</th>
+              <th>Açıklama</th>
+              <th>Öncelik</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="tasksBody">
+            <!-- JS ile doldurulacak -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card json-preview-card">
+      <h2>Aktif Proje JSON Önizleme</h2>
+      <textarea id="jsonPreview" class="json-preview" readonly></textarea>
+      <p class="hint">
+        Bu alan sadece okunur. domain bazlı JSON yapısını görmen için; ihtiyaç olursa kopyalayıp dışarı da alabilirsin.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const STORAGE_PREFIX = "seoProject:";
+      let currentProject = null;
+
+      const TASKS_TEMPLATE = [
+        { id: "hosting", title: "Hosting kontrolü", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Hosting hızını optimize et", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "ssl", title: "SSL kurulumu", category: "Teknik SEO", subcategory: "Güvenlik", description: "HTTPS/SSL sertifikasını doğrula", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "mobile", title: "Mobil uyumluluk testi", category: "Teknik SEO", subcategory: "Mobil SEO", description: "Google Mobile-Friendly Test çalıştır", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "url-structure", title: "URL yapı düzenlemesi", category: "Teknik SEO", subcategory: "Site Altyapısı", description: "Temiz ve okunabilir URL yapısı oluştur", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "robots", title: "robots.txt yapılandırma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Gereksiz sayfaları engelle, önemli sayfaları izinle", priority: "Yüksek", status: "Devam ediyor", done: false },
+        { id: "sitemap", title: "XML Sitemap oluşturma", category: "Teknik SEO", subcategory: "Dizine Eklenebilirlik", description: "Sitemap oluştur ve Google Search Console'a gönder", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "title-optimization", title: "Title optimizasyonu", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya benzersiz, açıklayıcı title ekle", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "meta-description", title: "Meta description yazımı", category: "On-Page SEO", subcategory: "Meta", description: "Her sayfaya tıklama odaklı meta description yaz", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "h1", title: "H1 optimizasyonu", category: "On-Page SEO", subcategory: "İçerik", description: "Her sayfada tek ve net bir H1 kullan", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "images-compress", title: "Görselleri sıkıştır", category: "Görsel SEO", subcategory: "Performans", description: "Görselleri mümkünse WebP formatına çevir ve sıkıştır", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "images-alt", title: "ALT metin ekle", category: "Görsel SEO", subcategory: "Erişilebilirlik", description: "Tüm görsellere anlamlı ALT metni ekle", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "internal-links", title: "İç bağlantı ekleme", category: "İç Bağlantı", subcategory: "Navigasyon", description: "Sayfalar arasında mantıklı iç link yapısı oluştur", priority: "Yüksek", status: "Devam ediyor", done: false },
+        { id: "orphan-pages", title: "Yetim sayfa kontrolü", category: "İç Bağlantı", subcategory: "Teknik", description: "Orphan (bağlantısız) sayfaları tespit et", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "backlink-audit", title: "Backlink analizi", category: "Off-Page SEO", subcategory: "Bağlantı Profili", description: "Zararlı/spam backlinkleri tespit ve temizle", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "pagespeed", title: "PageSpeed testi", category: "Performans", subcategory: "Core Web Vitals", description: "PageSpeed Insights ile hız ve CWV analiz et", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "css-js", title: "CSS/JS optimizasyonu", category: "Performans", subcategory: "Kod Optimizasyon", description: "CSS/JS dosyalarını küçült ve mümkünse ertele (defer)", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "gsc-setup", title: "GSC doğrulama", category: "Search Console", subcategory: "Setup", description: "Google Search Console mülkünü ekle ve doğrula", priority: "Yüksek", status: "Tamamlandı", done: true },
+        { id: "gsc-coverage", title: "Dizine ekleme sorunları çözme", category: "Search Console", subcategory: "Coverage", description: "Coverage raporundaki hataları çöz", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "ga4-setup", title: "GA4 kurulumu", category: "Analytics", subcategory: "Setup", description: "Google Analytics 4 kurulumu ve bağlantı", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "goals", title: "Dönüşüm hedeflerini ayarla", category: "Analytics", subcategory: "Ölçümleme", description: "Dönüşüm hedefleri ve event tracking yapılandır", priority: "Yüksek", status: "Bekliyor", done: false },
+        { id: "kw-research", title: "Anahtar kelime araştırması", category: "İçerik Stratejisi", subcategory: "Keyword Research", description: "Temel anahtar kelime listesini çıkar (Ahrefs, Semrush vb.)", priority: "Yüksek", status: "Devam ediyor", done: false },
+        { id: "content-calendar", title: "İçerik takvimi hazırlama", category: "İçerik Stratejisi", subcategory: "Planlama", description: "Blog/landing sayfa yayın takvimi oluştur", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "mobile-ux", title: "Mobil UX kontrol", category: "UX", subcategory: "Mobil", description: "Mobil gezinme ve okunabilirliği kontrol et", priority: "Orta", status: "Bekliyor", done: false },
+        { id: "cta", title: "CTA optimizasyonu", category: "UX", subcategory: "Dönüşüm", description: "Net, görünür ve ikna edici CTA butonları tasarla", priority: "Orta", status: "Bekliyor", done: false }
+      ];
+
+      const PRIORITY_OPTIONS = ["Düşük", "Orta", "Yüksek"];
+      const STATUS_OPTIONS = ["Bekliyor", "Devam ediyor", "Tamamlandı"];
+
+      const domainInput = document.getElementById("domainInput");
+      const loadDomainBtn = document.getElementById("loadDomainBtn");
+      const projectSelect = document.getElementById("projectSelect");
+      const deleteProjectBtn = document.getElementById("deleteProjectBtn");
+      const tasksBody = document.getElementById("tasksBody");
+      const jsonPreview = document.getElementById("jsonPreview");
+
+      function getStorageKey(domain) {
+        return STORAGE_PREFIX + domain;
+      }
+
+      function cloneTasksTemplate() {
+        // deep clone
+        return TASKS_TEMPLATE.map(t => ({ ...t }));
+      }
+
+      function loadExistingDomains() {
+        const domains = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(STORAGE_PREFIX)) {
+            const domain = key.substring(STORAGE_PREFIX.length);
+            domains.push(domain);
+          }
+        }
+        domains.sort();
+        return domains;
+      }
+
+      function refreshProjectSelect(activeDomain) {
+        const saved = loadExistingDomains();
+        projectSelect.innerHTML = "";
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "— Seç —";
+        projectSelect.appendChild(placeholder);
+
+        saved.forEach(domain => {
+          const opt = document.createElement("option");
+          opt.value = domain;
+          opt.textContent = domain;
+          if (activeDomain && activeDomain === domain) {
+            opt.selected = true;
+          }
+          projectSelect.appendChild(opt);
+        });
+      }
+
+      function saveCurrentProject() {
+        if (!currentProject || !currentProject.domain) return;
+        const key = getStorageKey(currentProject.domain);
+        localStorage.setItem(key, JSON.stringify(currentProject));
+        refreshProjectSelect(currentProject.domain);
+        updateJsonPreview();
+      }
+
+      function loadProject(domain) {
+        if (!domain) {
+          alert("Önce bir domain / proje adı gir.");
+          return;
+        }
+        const key = getStorageKey(domain);
+        const existing = localStorage.getItem(key);
+        if (existing) {
+          try {
+            currentProject = JSON.parse(existing);
+          } catch (e) {
+            console.error("JSON parse hatası, template yeniden oluşturuluyor", e);
+            currentProject = { domain, tasks: cloneTasksTemplate() };
+          }
+        } else {
+          currentProject = { domain, tasks: cloneTasksTemplate() };
+        }
+        domainInput.value = domain;
+        refreshProjectSelect(domain);
+        renderTasks();
+        updateJsonPreview();
+      }
+
+      function deleteProject(domain) {
+        if (!domain) return;
+        const key = getStorageKey(domain);
+        localStorage.removeItem(key);
+        if (currentProject && currentProject.domain === domain) {
+          currentProject = null;
+          tasksBody.innerHTML = "";
+          jsonPreview.value = "";
+        }
+        refreshProjectSelect(null);
+      }
+
+      function updateJsonPreview() {
+        if (!currentProject) {
+          jsonPreview.value = "";
+          return;
+        }
+        jsonPreview.value = JSON.stringify(currentProject, null, 2);
+      }
+
+      function renderTasks() {
+        tasksBody.innerHTML = "";
+        if (!currentProject) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 7;
+          td.textContent = "Önce üstten bir domain/proje yükle veya oluştur.";
+          td.style.fontSize = "13px";
+          td.style.color = "#6b7280";
+          td.style.textAlign = "center";
+          tr.appendChild(td);
+          tasksBody.appendChild(tr);
+          return;
+        }
+
+        currentProject.tasks.forEach(task => {
+          const tr = document.createElement("tr");
+          tr.dataset.taskId = task.id;
+
+          // Checkbox
+          const tdCheck = document.createElement("td");
+          tdCheck.className = "checkbox-cell";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = !!task.done;
+          checkbox.addEventListener("change", () => {
+            task.done = checkbox.checked;
+            if (checkbox.checked) {
+              task.status = "Tamamlandı";
+              statusSelect.value = "Tamamlandı";
+            } else if (task.status === "Tamamlandı") {
+              task.status = "Bekliyor";
+              statusSelect.value = "Bekliyor";
+            }
+            saveCurrentProject();
+          });
+          tdCheck.appendChild(checkbox);
+          tr.appendChild(tdCheck);
+
+          // Görev
+          const tdTitle = document.createElement("td");
+          tdTitle.textContent = task.title;
+          tr.appendChild(tdTitle);
+
+          // Kategori
+          const tdCat = document.createElement("td");
+          const catSpan = document.createElement("span");
+          catSpan.className = "badge";
+          catSpan.textContent = task.category;
+          tdCat.appendChild(catSpan);
+          tr.appendChild(tdCat);
+
+          // Alt kategori
+          const tdSubcat = document.createElement("td");
+          tdSubcat.textContent = task.subcategory || "";
+          tr.appendChild(tdSubcat);
+
+          // Açıklama
+          const tdDesc = document.createElement("td");
+          tdDesc.textContent = task.description || "";
+          tr.appendChild(tdDesc);
+
+          // Öncelik
+          const tdPriority = document.createElement("td");
+          const prioritySelect = document.createElement("select");
+          prioritySelect.className = "select priority-select";
+          PRIORITY_OPTIONS.forEach(optVal => {
+            const opt = document.createElement("option");
+            opt.value = optVal;
+            opt.textContent = optVal;
+            prioritySelect.appendChild(opt);
+          });
+          prioritySelect.value = PRIORITY_OPTIONS.includes(task.priority) ? task.priority : "Orta";
+          prioritySelect.addEventListener("change", () => {
+            task.priority = prioritySelect.value;
+            saveCurrentProject();
+          });
+          tdPriority.appendChild(prioritySelect);
+          tr.appendChild(tdPriority);
+
+          // Durum
+          const tdStatus = document.createElement("td");
+          const statusSelect = document.createElement("select");
+          statusSelect.className = "select status-select";
+          STATUS_OPTIONS.forEach(optVal => {
+            const opt = document.createElement("option");
+            opt.value = optVal;
+            opt.textContent = optVal;
+            statusSelect.appendChild(opt);
+          });
+          statusSelect.value = STATUS_OPTIONS.includes(task.status) ? task.status : "Bekliyor";
+          statusSelect.addEventListener("change", () => {
+            task.status = statusSelect.value;
+            if (task.status === "Tamamlandı") {
+              task.done = true;
+              checkbox.checked = true;
+            } else if (task.done && task.status !== "Tamamlandı") {
+              task.done = false;
+              checkbox.checked = false;
+            }
+            saveCurrentProject();
+          });
+          tdStatus.appendChild(statusSelect);
+          tr.appendChild(tdStatus);
+
+          tasksBody.appendChild(tr);
+        });
+      }
+
+      // Event bindings
+      loadDomainBtn.addEventListener("click", () => {
+        const domain = domainInput.value.trim();
+        if (!domain) {
+          alert("Lütfen bir domain veya proje adı gir.");
+          return;
+        }
+        loadProject(domain);
+      });
+
+      domainInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          loadDomainBtn.click();
+        }
+      });
+
+      projectSelect.addEventListener("change", () => {
+        const domain = projectSelect.value;
+        if (!domain) return;
+        loadProject(domain);
+      });
+
+      deleteProjectBtn.addEventListener("click", () => {
+        const domain = projectSelect.value || (currentProject && currentProject.domain);
+        if (!domain) {
+          alert("Silmek için önce bir proje seç.");
+          return;
+        }
+        const ok = confirm(`'${domain}' projesini (JSON kaydını) silmek istediğine emin misin?`);
+        if (!ok) return;
+        deleteProject(domain);
+      });
+
+      // İlk açılışta kayıtlı projeleri listele
+      (function init() {
+        refreshProjectSelect(null);
+        renderTasks();
+      })();
+    })();
+  </script>
+</body>
+</html>
