@@ -1,0 +1,12 @@
+{
+  "name": "anbarli-seo-task-manager",
+  "version": "1.0.0",
+  "description": "Local-first SEO Task Manager using File System Access API",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["seo", "task-manager", "local-first", "javascript", "file-system-api"],
+  "author": "Anbarlı",
+  "license": "MIT"
+}

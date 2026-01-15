@@ -1,167 +1,283 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-bs-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <title>SEO Görev Yöneticisi</title>
+  <title>Anbarlı SEO Task Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome 6 CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-  <div class="app-container">
-    <div class="card">
-      <h1>SEO Görev Yöneticisi</h1>
-      <p class="subtitle">
-        Domain seç, görevleri güncelle. Her değişiklik data/ klasöründeki JSON dosyasına otomatik kaydedilir.
-      </p>
-
-      <div class="top-bar">
-        <div class="field-group">
-          <label for="domainInput">Domain / Proje Adı</label>
-          <input id="domainInput" class="input" placeholder="ör. example.com veya proje-adi" />
+<body class="bg-body-tertiary">
+  <div class="container py-4">
+    <!-- Header Card -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h1 class="h3 fw-bold text-primary mb-2" data-i18n="appTitle"><i class="fa-solid fa-rocket me-2"></i>Anbarlı SEO Task Manager</h1>
+            <p class="text-muted small mb-4" data-i18n="appDesc">
+              Domain seç, görevleri güncelle. Her değişiklik data/ klasöründeki JSON dosyasına otomatik kaydedilir.
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <button id="themeToggleBtn" class="btn btn-outline-secondary btn-sm" title="Tema Değiştir">
+              <i class="fa-solid fa-moon"></i>
+            </button>
+            <select id="languageSelect" class="form-select form-select-sm" style="width: auto;">
+              <option value="tr">TR</option>
+              <option value="en">EN</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field-group">
-          <label>&nbsp;</label>
-          <button id="loadDomainBtn" class="button">
-            ⚙️ Yükle / Oluştur
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+          <div class="flex-grow-1">
+            <select id="projectSelect" class="form-select" aria-label="Project Select">
+              <option value="" data-i18n="selectProject">— Proje Seçiniz —</option>
+            </select>
+          </div>
+
+          <button id="deleteProjectBtn" class="btn btn-danger" title="Seçili Projeyi Sil" data-i18n-title="deleteProject">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+
+          <button id="openNewProjectModalBtn" class="btn btn-success" title="Yeni Proje Ekle" data-i18n-title="newProject">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+
+          <button id="reSelectFolderBtn" class="btn btn-secondary" title="Data Klasör İzni / Değiştir" data-i18n-title="folderPermission">
+            <i class="fa-solid fa-folder-open"></i>
           </button>
         </div>
-
-        <div class="field-group">
-          <label for="projectSelect">Kayıtlı Projeler</label>
-          <select id="projectSelect" class="select">
-            <option value="">— Seç —</option>
-          </select>
-        </div>
-
-        <div class="field-group">
-          <label>&nbsp;</label>
-          <button id="deleteProjectBtn" class="button secondary">
-            🗑️ Seçili Projeyi Sil
-          </button>
+        
+        <div class="alert alert-info mt-3 mb-0 py-2 small">
+          <i class="fa-solid fa-circle-info me-2"></i>
+          <strong data-i18n="firstUse">İlk Kullanım:</strong> <span data-i18n="firstUseDesc">Uygulama yüklendiğinde data/ klasörünü seçmeniz istenecek. Lütfen proje klasörünüzdeki "data" klasörünü seçin.</span>
         </div>
       </div>
-      
-      <p class="hint">
-        Not: İlk kullanımda data/ klasörünü seçmeniz istenecek. Her değişiklik otomatik olarak JSON dosyasına kaydedilir.
-      </p>
     </div>
 
-    <div class="card tasks-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h2 style="margin:0; font-size:16px;">Görevler</h2>
-        <button id="addTaskBtn" class="button success" style="min-height: 32px; padding: 6px 12px;">
-          ➕ Yeni Görev Ekle
+    <!-- Tasks Card -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
+        <h2 class="h5 mb-0" data-i18n="tasksTitle"><i class="fa-solid fa-list-check me-2"></i>Görevler</h2>
+        <button id="addTaskBtn" class="btn btn-sm btn-success">
+          <i class="fa-solid fa-plus me-1"></i> <span data-i18n="newTask">Yeni Görev</span>
         </button>
       </div>
-      <p class="hint">
-        Bir domain yükledikten sonra görevleri güncelleyebilirsin. Checkbox, öncelik ve durum alanı JSON'a yazılır.
-      </p>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th class="checkbox-cell">Bitti</th>
-              <th>Görev</th>
-              <th>Kategori</th>
-              <th>Açıklama</th>
-              <th>Öncelik</th>
-              <th>Durum</th>
-              <th>Başlangıç</th>
-              <th>Hedef Bitiş</th>
-              <th style="text-align: center;">Aksiyon</th>
-            </tr>
-          </thead>
-          <tbody id="tasksBody">
-            <!-- JS ile doldurulacak -->
-          </tbody>
-        </table>
+      <div class="card-body">
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="small fw-bold text-muted" data-i18n="progress">Proje İlerlemesi</span>
+            <span class="small fw-bold text-primary" id="progressText">0%</span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div id="progressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-3">
+            <div class="input-group">
+              <span class="input-group-text bg-body"><i class="fa-solid fa-search text-muted"></i></span>
+              <input id="searchInput" class="form-control" placeholder="Görev ara..." data-i18n-placeholder="searchPlaceholder" />
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select id="filterCategory" class="form-select">
+              <option value="" data-i18n="allCategories">Tüm Kategoriler</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="filterPriority" class="form-select">
+              <option value="" data-i18n="allPriorities">Tüm Öncelikler</option>
+              <option value="Düşük" data-i18n="priorityLow">Düşük</option>
+              <option value="Orta" data-i18n="priorityMedium">Orta</option>
+              <option value="Yüksek" data-i18n="priorityHigh">Yüksek</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select id="filterStatus" class="form-select">
+              <option value="" data-i18n="allStatuses">Tüm Durumlar</option>
+              <option value="Bekliyor" data-i18n="statusPending">Bekliyor</option>
+              <option value="Devam ediyor" data-i18n="statusInProgress">Devam ediyor</option>
+              <option value="Tamamlandı" data-i18n="statusDone">Tamamlandı</option>
+            </select>
+          </div>
+          <div class="col-md-1 d-flex align-items-center justify-content-center">
+            <div class="form-check form-switch" title="Kategoriye Göre Grupla">
+              <input class="form-check-input" type="checkbox" id="groupByCategory">
+              <label class="form-check-label small text-muted" for="groupByCategory"><i class="fa-solid fa-layer-group"></i></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 40px;"></th>
+                <th class="text-center" style="width: 50px;" data-i18n="tableDone">Bitti</th>
+                <th data-i18n="tableTask">Görev</th>
+                <th data-i18n="tableCategory">Kategori</th>
+                <th style="width: 120px;" data-i18n="tablePriority">Öncelik</th>
+                <th style="width: 140px;" data-i18n="tableStatus">Durum</th>
+                <th data-i18n="tableStart">Başlangıç</th>
+                <th data-i18n="tableEnd">Hedef Bitiş</th>
+                <th class="text-center" style="width: 100px;" data-i18n="tableAction">Aksiyon</th>
+              </tr>
+            </thead>
+            <tbody id="tasksBody">
+              <!-- JS ile doldurulacak -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <h2 style="margin-top:0; font-size:16px;">📎 Faydalı SEO Araçları</h2>
-      <div id="toolLinks">
-        <p class="hint">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>
+    <!-- Tools Card -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-transparent py-3">
+        <h2 class="h5 mb-0" data-i18n="toolsTitle"><i class="fa-solid fa-toolbox me-2"></i>Faydalı SEO Araçları</h2>
+      </div>
+      <div class="card-body">
+        <div id="toolLinks">
+          <p class="text-muted small" data-i18n="toolsDesc">Bir proje yükleyince linkler otomatik olarak domain ile güncellenecek.</p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Task Modal -->
-  <div id="taskModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modalTitle">Yeni Görev Ekle</h2>
-        <span class="modal-close">&times;</span>
+  <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold" id="modalTitle"><i class="fa-solid fa-plus me-2"></i><span data-i18n="modalNewTask">Yeni Görev Ekle</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="taskForm">
+            <div class="mb-4 p-3 bg-body-secondary rounded border-start border-4 border-primary shadow-sm">
+              <label for="taskTitle" class="form-label fw-bold text-body-emphasis"><i class="fa-solid fa-heading me-2"></i><span data-i18n="lblTaskName">Görev Adı</span> *</label>
+              <input type="text" id="taskTitle" class="form-control" required />
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="taskCategory" class="form-label fw-bold text-secondary"><i class="fa-solid fa-tag me-1"></i><span data-i18n="lblCategory">Kategori</span> *</label>
+                <select id="taskCategory" class="form-select" required></select>
+              </div>
+              <div class="col-md-6">
+                <label for="taskSubcategory" class="form-label fw-bold text-secondary"><i class="fa-solid fa-tags me-1"></i><span data-i18n="lblSubcategory">Alt Kategori</span></label>
+                <select id="taskSubcategory" class="form-select"></select>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="taskDescription" class="form-label fw-bold text-secondary"><i class="fa-solid fa-align-left me-1"></i><span data-i18n="lblDescription">Açıklama</span></label>
+              <textarea id="taskDescription" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <div id="taskRelatedTools" class="mb-3 d-none">
+              <label class="form-label text-primary fw-bold"><i class="fa-solid fa-toolbox me-1"></i><span data-i18n="lblTools">İlgili Araçlar</span></label>
+              <div id="taskToolsList" class="d-flex flex-wrap gap-2"></div>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="taskPriority" class="form-label fw-bold text-secondary"><i class="fa-solid fa-flag me-1"></i><span data-i18n="lblPriority">Öncelik</span></label>
+                <select id="taskPriority" class="form-select">
+                  <option value="Düşük" data-i18n="priorityLow">Düşük</option>
+                  <option value="Orta" selected data-i18n="priorityMedium">Orta</option>
+                  <option value="Yüksek" data-i18n="priorityHigh">Yüksek</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="taskStatus" class="form-label fw-bold text-secondary"><i class="fa-solid fa-bars-progress me-1"></i><span data-i18n="lblStatus">Durum</span></label>
+                <select id="taskStatus" class="form-select">
+                  <option value="Bekliyor" selected data-i18n="statusPending">Bekliyor</option>
+                  <option value="Devam ediyor" data-i18n="statusInProgress">Devam ediyor</option>
+                  <option value="Tamamlandı" data-i18n="statusDone">Tamamlandı</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="taskStartDate" class="form-label fw-bold text-secondary"><i class="fa-regular fa-calendar me-1"></i><span data-i18n="lblStartDate">Başlangıç Tarihi</span></label>
+                <input type="date" id="taskStartDate" class="form-control" />
+              </div>
+              <div class="col-md-6">
+                <label for="taskDueDate" class="form-label fw-bold text-secondary"><i class="fa-regular fa-calendar-check me-1"></i><span data-i18n="lblDueDate">Hedef Bitiş Tarihi</span></label>
+                <input type="date" id="taskDueDate" class="form-control" />
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="taskNotes" class="form-label fw-bold text-secondary"><i class="fa-regular fa-comment-dots me-1"></i><span data-i18n="lblNotes">Notlar / Yorumlar</span></label>
+              <textarea id="taskNotes" class="form-control" rows="4" placeholder="İlerleme notları, yorumlar, özel notlar..." data-i18n-placeholder="lblNotes"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btnCancel">İptal</button>
+          <button type="submit" form="taskForm" class="btn btn-primary" data-i18n="btnSave">Kaydet</button>
+        </div>
       </div>
-      <form id="taskForm">
-        <div class="form-group">
-          <label for="taskTitle">Görev Adı *</label>
-          <input type="text" id="taskTitle" class="input" required />
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="taskCategory">Kategori *</label>
-            <input type="text" id="taskCategory" class="input" required />
-          </div>
-          
-          <div class="form-group">
-            <label for="taskSubcategory">Alt Kategori</label>
-            <input type="text" id="taskSubcategory" class="input" />
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="taskDescription">Açıklama</label>
-          <textarea id="taskDescription" class="input" rows="3"></textarea>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="taskPriority">Öncelik</label>
-            <select id="taskPriority" class="select">
-              <option value="Düşük">Düşük</option>
-              <option value="Orta" selected>Orta</option>
-              <option value="Yüksek">Yüksek</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="taskStatus">Durum</label>
-            <select id="taskStatus" class="select">
-              <option value="Bekliyor" selected>Bekliyor</option>
-              <option value="Devam ediyor">Devam ediyor</option>
-              <option value="Tamamlandı">Tamamlandı</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="taskStartDate">Başlangıç Tarihi</label>
-            <input type="date" id="taskStartDate" class="input" />
-          </div>
-          
-          <div class="form-group">
-            <label for="taskDueDate">Hedef Bitiş Tarihi</label>
-            <input type="date" id="taskDueDate" class="input" />
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="taskNotes">Notlar / Yorumlar</label>
-          <textarea id="taskNotes" class="input" rows="4" placeholder="İlerleme notları, yorumlar, özel notlar..."></textarea>
-        </div>
-        
-        <div class="modal-actions">
-          <button type="button" class="button secondary" id="cancelModalBtn">İptal</button>
-          <button type="submit" class="button success">Kaydet</button>
-        </div>
-      </form>
     </div>
   </div>
 
+  <!-- New Project Modal -->
+  <div class="modal fade" id="newProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-folder-plus me-2"></i><span data-i18n="modalNewProject">Yeni Proje Oluştur</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newProjectForm">
+            <div class="mb-3">
+              <label for="newDomainInput" class="form-label fw-bold text-secondary" data-i18n="lblDomain">Domain / Proje Adı</label>
+              <input id="newDomainInput" class="form-control" placeholder="ör. example.com" required data-i18n-placeholder="lblDomain" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btnCancel">İptal</button>
+          <button type="submit" form="newProjectForm" class="btn btn-success" data-i18n="btnCreate">Oluştur</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title fw-bold" id="confirmationModalTitle"><i class="fa-solid fa-triangle-exclamation me-2"></i><span data-i18n="modalConfirm">İşlemi Onayla</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmationModalBody">
+          <span data-i18n="confirmBody">Bu işlemi yapmak istediğinizden emin misiniz?</span>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btnCancel">İptal</button>
+          <button type="button" class="btn btn-danger" id="confirmActionBtn" data-i18n="btnConfirm">Evet, Onayla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
