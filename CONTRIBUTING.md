@@ -28,7 +28,7 @@ Want a new feature? Great! Open an [issue](../../issues/new) and:
 
 1. **Fork & Clone**
    ```bash
-   git clone https://github.com/YOUR-USERNAME/anbarli-seo-task-manager.git
+   git clone https://github.com/anbarli/anbarli-seo-task-manager.git
    cd anbarli-seo-task-manager
    ```
 
@@ -157,7 +157,7 @@ Yeni bir özellik mi istiyorsunuz? Harika! Bir [issue](../../issues/new) açarak
 
 1. **Fork & Clone**
    ```bash
-   git clone https://github.com/YOUR-USERNAME/anbarli-seo-task-manager.git
+   git clone https://github.com/anbarli/anbarli-seo-task-manager.git
    cd anbarli-seo-task-manager
    ```
 

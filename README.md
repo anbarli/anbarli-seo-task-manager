@@ -89,7 +89,7 @@ No npm or backend installation is required. It runs entirely client-side.
 
 ```bash
 # Clone the project
-git clone https://github.com/YOUR-USERNAME/anbarli-seo-task-manager.git
+git clone https://github.com/anbarli/anbarli-seo-task-manager.git
 
 # Go to project directory
 cd anbarli-seo-task-manager
@@ -261,7 +261,7 @@ npm veya backend kurulumu gerekmez. Tamamen istemci tarafında çalışır.
 
 ```bash
 # Projeyi klonlayın
-git clone https://github.com/YOUR-USERNAME/anbarli-seo-task-manager.git
+git clone https://github.com/anbarli/anbarli-seo-task-manager.git
 
 # Proje dizinine gidin
 cd anbarli-seo-task-manager
